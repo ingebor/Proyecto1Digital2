@@ -1,7 +1,7 @@
 
 //****************************************************************
 // UVG BE3015-Digital 2
-// Laboratorio 4 
+// Laboratorio 4
 // Ingebor Ayleen Rubio Vasquez - 19003
 //****************************************************************
 //****************************************************************
@@ -23,15 +23,15 @@
 #define freqPWM1 1000 // Frecuencia en Hz
 #define freqPWM2 500  // Frecuencia en Hz
 #define freqPWMServo 50
-#define resolution 8  // 1-16 bits de resolución
+#define resolution 8 // 1-16 bits de resolución
 
-//Pines de entrada 
-#define pinLedR 12
-#define pinLedG 14
-#define pinLedA 27
+// Pines de entrada
+#define pinLedR 27
+#define pinLedG 12
+#define pinLedA 14
 #define pinPWM 15 // GPIO 2 para tener la salida del PWM
 
-#define boton1 4
+#define boton1 2
 
 #define pinServo 13
 
@@ -39,9 +39,9 @@
 // Codigo de: https://esp32io.com/tutorials/esp32-lm35-temperature-sensor
 //**********************************************************
 
-#define ADC_VREF_mV    3300.0 // in millivolt
+#define ADC_VREF_mV 3300.0 // in millivolt
 #define ADC_RESOLUTION 4096.0
-#define PIN_LM35       34 // ESP32 pin GPIO36 (ADC0) connected to LM35
+#define PIN_LM35 34 // ESP32 pin GPIO36 (ADC0) connected to LM35
 
 //****************************************************************
 // Prototipos de funciones
@@ -79,12 +79,8 @@ void setup()
   Serial.begin(115200);
   configurarPWM();
   pinMode(boton1, INPUT_PULLDOWN);
-  pinMode(pinLedA, OUTPUT);
-  pinMode(pinLedG, OUTPUT);
-  pinMode(pinLedR, OUTPUT);
   myservo.attach(pinServo);
   myservo.write(pos);
-
 }
 //****************************************************************
 // Loop Principal
@@ -92,55 +88,56 @@ void setup()
 void loop()
 {
   int estadob1 = digitalRead(boton1); // lEER ESTADO DE LOS BOTONES
-  if (estadob1 == 1){
-    temp = obtenerTemp();
-  }
-  else
-    temp = 0.0;
-
-  if(temp <= 37.0){
-    caso = 0;
-    Serial.println("Temp menor a 37");
-  }
-  else if (temp > 37.0 && temp <= 37.5){
-    caso = 1;
-    Serial.println("Temp entre 37 y 37.5");
-  }
-  else if (temp > 37){
-    caso = 2;
-    Serial.println("Temp mayor a 37");
-  }
-
-  switch (caso)
+  if (estadob1 == 1)
   {
-  case 0: //Servo a 0° y modificar LED verde
-    myservo.write(0);
-    ledcWrite(ledRChannel, 0); //Apagar LED rojo
-    ledcWrite(ledAChannel, 0); //Apagar LED amarillo
-    ledcWrite(pwmChannel, dcG); // Encender LED verde
-    ledcWrite(ledGChannel, dcG);
-    delay(10);
-    break;
-  case 1: //Servo a 90° y modificar LED amarillo
-    myservo.write(90);
-    ledcWrite(ledRChannel, 0); //Apagar LED rojo
-    ledcWrite(ledGChannel, 0); //Apagar LED verde
-    ledcWrite(pwmChannel, dcB); //Encender LED amarillo
-    ledcWrite(ledAChannel, dcB);
-    delay(10);
-    
-    break;
-  case 2: //Servo a 180° y modificar LED rojo
-    myservo.write(180);
-    ledcWrite(ledGChannel, 0); //Apagar led verde
-    ledcWrite(ledAChannel, 0); //Apagar led amarillo
-    ledcWrite(pwmChannel, dcR); //Encender led rojo
-    ledcWrite(ledRChannel, dcR);
-    delay(10);
-    break;
-  
-  }
+    temp = obtenerTemp();
+    Serial.println("Obteniendo temperatura: ");
+    Serial.println(temp);
+    if (temp <= 37.0)
+    {
+      caso = 0;
+      Serial.println("Temp menor a 37");
+    }
+    else if (temp > 37.0 && temp <= 37.5)
+    {
+      caso = 1;
+      Serial.println("Temp entre 37 y 37.5");
+    }
+    else if (temp > 37)
+    {
+      caso = 2;
+      Serial.println("Temp mayor a 37");
+    }
 
+    switch (caso)
+    {
+    case 0: // Servo a 0° y modificar LED verde
+      myservo.write(90);
+      ledcWrite(ledRChannel, 0);  // Apagar LED rojo
+      ledcWrite(ledAChannel, 0);  // Apagar LED amarillo
+      ledcWrite(pwmChannel, dcG); // Encender LED verde
+      ledcWrite(ledGChannel, dcG);
+      delay(10);
+      break;
+    case 1: // Servo a 90° y modificar LED amarillo
+      myservo.write(75);
+      ledcWrite(ledRChannel, 0);  // Apagar LED rojo
+      ledcWrite(ledGChannel, 0);  // Apagar LED verde
+      ledcWrite(pwmChannel, dcB); // Encender LED amarillo
+      ledcWrite(ledAChannel, dcB);
+      delay(10);
+
+      break;
+    case 2: // Servo a 180° y modificar LED rojo
+      myservo.write(120);
+      ledcWrite(ledGChannel, 0);  // Apagar led verde
+      ledcWrite(ledAChannel, 0);  // Apagar led amarillo
+      ledcWrite(pwmChannel, dcR); // Encender led rojo
+      ledcWrite(ledRChannel, dcR);
+      delay(10);
+      break;
+    }
+  }
 }
 //****************************************************************
 // Función para configurar módulo PWM
@@ -161,7 +158,8 @@ void configurarPWM(void)
   ledcAttachPin(pinServo, pwmChannelServo);
 }
 
-float obtenerTemp(void){
+float obtenerTemp(void)
+{
   //******************************Descomentar al tener sensor******************
   /*
   // read the ADC value from the temperature sensor
@@ -184,8 +182,8 @@ float obtenerTemp(void){
 
   //*****************************************************
 
-  //Temporal en lo que no se tiene el sensor
-  int tempC = 35.4;
+  // Temporal en lo que no se tiene el sensor
+  float tempC = 36.2;
 
   delay(500);
   return tempC;
