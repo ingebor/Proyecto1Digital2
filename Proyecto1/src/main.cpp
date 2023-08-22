@@ -35,19 +35,33 @@
 
 #define pinServo 13
 
+#define A 34
+#define B 35
+#define C 23
+#define D 21
+#define E 22
+#define F 32
+#define G 33
+
+#define GND1 18
+#define GND2 19
+#define GND3 5
+
 //******************Sensor de temperatura*******************
 // Codigo de: https://esp32io.com/tutorials/esp32-lm35-temperature-sensor
 //**********************************************************
 
-#define ADC_VREF_mV 3300.0 // in millivolt
-#define ADC_RESOLUTION 4096.0
-#define PIN_LM35 34 // ESP32 pin GPIO36 (ADC0) connected to LM35
+// #define ADC_VREF_mV 3300.0 // in millivolt
+// #define ADC_RESOLUTION 4096.0
+// #define PIN_LM35 34 // ESP32 pin GPIO36 (ADC0) connected to LM35
 
 //****************************************************************
 // Prototipos de funciones
 //****************************************************************
 void configurarPWM(void);
 float obtenerTemp(void);
+void mostrarDig(int dig);
+void mostrarCompleto (int numero);
 //****************************************************************
 // Variables Globales
 //****************************************************************
@@ -97,6 +111,8 @@ void loop()
     {
       caso = 0;
       Serial.println("Temp menor a 37");
+      myservo.write(25);
+      delay(1000);
     }
     else if (temp > 37.0 && temp <= 37.5)
     {
@@ -111,29 +127,29 @@ void loop()
 
     switch (caso)
     {
-    case 0: // Servo a 0° y modificar LED verde
-      myservo.write(90);
+    case 0:                       // Servo a 30° y modificar LED verde
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledAChannel, 0);  // Apagar LED amarillo
       ledcWrite(pwmChannel, dcG); // Encender LED verde
       ledcWrite(ledGChannel, dcG);
+      myservo.write(30);
       delay(10);
       break;
-    case 1: // Servo a 90° y modificar LED amarillo
-      myservo.write(75);
+    case 1:                       // Servo a 90° y modificar LED amarillo
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledGChannel, 0);  // Apagar LED verde
       ledcWrite(pwmChannel, dcB); // Encender LED amarillo
       ledcWrite(ledAChannel, dcB);
+      myservo.write(90);
       delay(10);
 
       break;
-    case 2: // Servo a 180° y modificar LED rojo
-      myservo.write(120);
+    case 2:                       // Servo a 180° y modificar LED rojo
       ledcWrite(ledGChannel, 0);  // Apagar led verde
       ledcWrite(ledAChannel, 0);  // Apagar led amarillo
       ledcWrite(pwmChannel, dcR); // Encender led rojo
       ledcWrite(ledRChannel, dcR);
+      myservo.write(150);
       delay(10);
       break;
     }
@@ -149,13 +165,13 @@ void configurarPWM(void)
   ledcSetup(ledRChannel, freqPWM1, resolution);
   ledcSetup(ledGChannel, freqPWM2, resolution);
   ledcSetup(ledAChannel, freqPWM, resolution);
-  ledcSetup(pwmChannelServo, freqPWMServo, resolution);
-  // Paso 2: seleccionar en que GPIO tendremos nuestra señal PWM
+  // ledcSetup(pwmChannelServo, freqPWMServo, resolution);
+  //  Paso 2: seleccionar en que GPIO tendremos nuestra señal PWM
   ledcAttachPin(pinPWM, pwmChannel);
   ledcAttachPin(pinLedR, ledRChannel);
   ledcAttachPin(pinLedG, ledGChannel);
   ledcAttachPin(pinLedA, ledAChannel);
-  ledcAttachPin(pinServo, pwmChannelServo);
+  // ledcAttachPin(pinServo, pwmChannelServo);
 }
 
 float obtenerTemp(void)
@@ -183,8 +199,121 @@ float obtenerTemp(void)
   //*****************************************************
 
   // Temporal en lo que no se tiene el sensor
-  float tempC = 36.2;
+  float tempC = 36.5;
 
   delay(500);
   return tempC;
+}
+
+// Funciones para digitos
+
+void mostrarDig(int dig)
+{
+  switch (dig)
+  {
+  case 0:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, HIGH);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, LOW);
+    break;
+  case 1:
+    digitalWrite(A, LOW);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, LOW);
+    digitalWrite(E, LOW);
+    digitalWrite(F, LOW);
+    digitalWrite(G, LOW);
+    break;
+  case 2:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, LOW);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, HIGH);
+    digitalWrite(F, LOW);
+    digitalWrite(G, HIGH);
+    break;
+  case 3:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, LOW);
+    digitalWrite(F, LOW);
+    digitalWrite(G, HIGH);
+    break;
+  case 4:
+    digitalWrite(A, LOW);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, LOW);
+    digitalWrite(E, LOW);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, HIGH);
+    break;
+  case 5:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, LOW);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, LOW);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, HIGH);
+    break;
+  case 6:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, LOW);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, HIGH);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, HIGH);
+    break;
+  case 7:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, LOW);
+    digitalWrite(E, LOW);
+    digitalWrite(F, LOW);
+    digitalWrite(G, LOW);
+    break;
+  case 8:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, HIGH);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, HIGH);
+    break;
+  case 9:
+    digitalWrite(A, HIGH);
+    digitalWrite(B, HIGH);
+    digitalWrite(C, HIGH);
+    digitalWrite(D, HIGH);
+    digitalWrite(E, LOW);
+    digitalWrite(F, HIGH);
+    digitalWrite(G, HIGH);
+    break;
+  }
+}
+
+void mostrarCompleto (int numero){
+  mostrarDig(numero/100);
+  digitalWrite(GND1, HIGH); // first digit on,
+  digitalWrite(GND2, LOW); // other off
+  digitalWrite(GND3, LOW);
+  delay (1);
+
+  numero = numero%100;  // remainder of 1234/1000 is 234
+  digitalWrite(GND1, LOW); // first digit is off
+  mostrarDig(numero/10); //// segments are set to display "2"
+  digitalWrite(GND2, HIGH); // second digit is on
+  delay (1); // and so on....
 }
