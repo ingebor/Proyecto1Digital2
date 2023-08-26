@@ -10,6 +10,8 @@
 #include <Arduino.h>
 #include "driver/ledc.h"
 #include <ESP32Servo.h>
+
+#include "config.h"
 //****************************************************************
 // Definición de etiquetas
 //****************************************************************
@@ -86,6 +88,13 @@ int tempDisplay = 0;
 // void IRAM_ATTR ISR(){
 //
 //}
+
+//*********************************************************
+//  Configuraciones adafruit
+//********************************************************
+AdafruitIO_Feed *tempCanal = io.feed("Proyecto1Temperatura");
+
+
 //****************************************************************
 // Configuración
 //****************************************************************
@@ -108,16 +117,32 @@ void setup()
   pinMode(GND1,OUTPUT);
   pinMode(GND2,OUTPUT);
   pinMode(GND3,OUTPUT);
+
+  //Adafruit
+  while(! Serial);
+  Serial.print("Connecting to Adafruit IO");
+  io.connect();
+  // wait for a connection
+  while(io.status() < AIO_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+  // we are connected
+  Serial.println();
+  Serial.println(io.statusText());
 }
 //****************************************************************
 // Loop Principal
 //****************************************************************
 void loop()
 {
+  io.run();
   int estadob1 = digitalRead(boton1); // lEER ESTADO DE LOS BOTONES
   if (estadob1 == 1)
   {
     temp = obtenerTemp();
+    tempCanal->save(temp);
+    delay(3000);
     tempDisplay = temp*10;
     Serial.println("Temperatura display");
     Serial.println(tempDisplay);
@@ -176,6 +201,7 @@ void loop()
       break;
     }
   }
+  
   mostrarCompleto(tempDisplay);
   delay(1);
 }
