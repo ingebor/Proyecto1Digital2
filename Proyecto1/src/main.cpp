@@ -30,13 +30,14 @@
 #define pinLedG 12
 #define pinLedA 14
 #define pinPWM 15 // GPIO 2 para tener la salida del PWM
+#define PIN_LM35 35
 
-#define boton1 2
+#define boton1 25
 
 #define pinServo 13
 
-#define A 34
-#define B 35
+#define A 2
+#define B 4
 #define C 23
 #define D 21
 #define E 22
@@ -51,9 +52,8 @@
 // Codigo de: https://esp32io.com/tutorials/esp32-lm35-temperature-sensor
 //**********************************************************
 
-// #define ADC_VREF_mV 3300.0 // in millivolt
-// #define ADC_RESOLUTION 4096.0
-// #define PIN_LM35 34 // ESP32 pin GPIO36 (ADC0) connected to LM35
+#define ADC_VREF_mV 3300.0 // in millivolt
+#define ADC_RESOLUTION 4096.0
 
 //****************************************************************
 // Prototipos de funciones
@@ -78,6 +78,7 @@ Servo myservo;
 
 float temp = 0.0;
 int pos = 0;
+int tempDisplay = 0;
 
 //****************************************************************
 // ISR: Interrupciones
@@ -93,8 +94,20 @@ void setup()
   Serial.begin(115200);
   configurarPWM();
   pinMode(boton1, INPUT_PULLDOWN);
+  pinMode(PIN_LM35,INPUT);
+  pinMode(pinServo,OUTPUT);
   myservo.attach(pinServo);
   myservo.write(pos);
+  pinMode(A,OUTPUT);
+  pinMode(B,OUTPUT);
+  pinMode(C,OUTPUT);
+  pinMode(D,OUTPUT);
+  pinMode(E,OUTPUT);
+  pinMode(F,OUTPUT);
+  pinMode(G,OUTPUT);
+  pinMode(GND1,OUTPUT);
+  pinMode(GND2,OUTPUT);
+  pinMode(GND3,OUTPUT);
 }
 //****************************************************************
 // Loop Principal
@@ -105,6 +118,15 @@ void loop()
   if (estadob1 == 1)
   {
     temp = obtenerTemp();
+    tempDisplay = temp*10;
+    Serial.println("Temperatura display");
+    Serial.println(tempDisplay);
+    //mostrarCompleto(tempDisplay);
+    //Serial.println("temp a displays");
+    //Serial.println(tempDisplay);
+    //digitalWrite(GND1,HIGH);
+    //digitalWrite(D,HIGH);
+    //mostrarDig(0);
     Serial.println("Obteniendo temperatura: ");
     Serial.println(temp);
     if (temp <= 37.0)
@@ -154,6 +176,8 @@ void loop()
       break;
     }
   }
+  mostrarCompleto(tempDisplay);
+  delay(1);
 }
 //****************************************************************
 // Función para configurar módulo PWM
@@ -194,12 +218,12 @@ float obtenerTemp(void)
   Serial.print("  ~  "); // separator between °C and °F
   Serial.print(tempF);   // print the temperature in °F
   Serial.println("°F");
+  
   */
-
   //*****************************************************
 
   // Temporal en lo que no se tiene el sensor
-  float tempC = 36.5;
+  float tempC = 38.3;
 
   delay(500);
   return tempC;
@@ -209,11 +233,15 @@ float obtenerTemp(void)
 
 void mostrarDig(int dig)
 {
+  //Serial.println("Entra al mostrarDig");
   switch (dig)
   {
   case 0:
+    //Serial.println("El digito es 0");
     digitalWrite(A, HIGH);
+    //Serial.println("Enciende A");
     digitalWrite(B, HIGH);
+    //Serial.println("Enciende B");
     digitalWrite(C, HIGH);
     digitalWrite(D, HIGH);
     digitalWrite(E, HIGH);
@@ -316,4 +344,10 @@ void mostrarCompleto (int numero){
   mostrarDig(numero/10); //// segments are set to display "2"
   digitalWrite(GND2, HIGH); // second digit is on
   delay (1); // and so on....
+
+  numero =numero%10; 
+  digitalWrite(GND2, LOW);
+  mostrarDig(numero); 
+  digitalWrite(GND3, HIGH);
+  delay (1);
 }
