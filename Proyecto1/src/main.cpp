@@ -81,6 +81,7 @@ Servo myservo;
 float temp = 0.0;
 int pos = 0;
 int tempDisplay = 0;
+int estadoSemaforo = 0;
 
 //****************************************************************
 // ISR: Interrupciones
@@ -93,6 +94,7 @@ int tempDisplay = 0;
 //  Configuraciones adafruit
 //********************************************************
 AdafruitIO_Feed *tempCanal = io.feed("Proyecto1Temperatura");
+AdafruitIO_Feed *estadoLed = io.feed("ValorLed");
 
 
 //****************************************************************
@@ -141,8 +143,6 @@ void loop()
   if (estadob1 == 1)
   {
     temp = obtenerTemp();
-    tempCanal->save(temp);
-    delay(3000);
     tempDisplay = temp*10;
     Serial.println("Temperatura display");
     Serial.println(tempDisplay);
@@ -175,6 +175,8 @@ void loop()
     switch (caso)
     {
     case 0:                       // Servo a 30° y modificar LED verde
+      estadoSemaforo = 0;
+      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledAChannel, 0);  // Apagar LED amarillo
       ledcWrite(pwmChannel, dcG); // Encender LED verde
@@ -183,6 +185,8 @@ void loop()
       delay(10);
       break;
     case 1:                       // Servo a 90° y modificar LED amarillo
+      estadoSemaforo = 1;
+      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledGChannel, 0);  // Apagar LED verde
       ledcWrite(pwmChannel, dcB); // Encender LED amarillo
@@ -192,6 +196,8 @@ void loop()
 
       break;
     case 2:                       // Servo a 180° y modificar LED rojo
+      estadoSemaforo = 2;
+      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledGChannel, 0);  // Apagar led verde
       ledcWrite(ledAChannel, 0);  // Apagar led amarillo
       ledcWrite(pwmChannel, dcR); // Encender led rojo
@@ -200,6 +206,9 @@ void loop()
       delay(10);
       break;
     }
+    tempCanal->save(temp);
+    estadoLed->save(estadoSemaforo);
+    delay(3000);
   }
   
   mostrarCompleto(tempDisplay);
