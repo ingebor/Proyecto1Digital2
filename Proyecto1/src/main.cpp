@@ -1,7 +1,7 @@
 
 //****************************************************************
 // UVG BE3015-Digital 2
-// Laboratorio 4
+// Proyecto 1
 // Ingebor Ayleen Rubio Vasquez - 19003
 //****************************************************************
 //****************************************************************
@@ -9,9 +9,8 @@
 //****************************************************************
 #include <Arduino.h>
 #include "driver/ledc.h"
-#include <ESP32Servo.h>
-
 #include "config.h"
+#include <ESP32Servo.h>
 //****************************************************************
 // Definición de etiquetas
 //****************************************************************
@@ -26,6 +25,7 @@
 #define freqPWM2 500  // Frecuencia en Hz
 #define freqPWMServo 50
 #define resolution 8 // 1-16 bits de resolución
+#define reServo 10
 
 // Pines de entrada
 #define pinLedR 27
@@ -55,7 +55,7 @@
 //**********************************************************
 
 #define ADC_VREF_mV 3300.0 // in millivolt
-#define ADC_RESOLUTION 4096.0
+#define ADC_RESOLUTION 4095.0
 
 //****************************************************************
 // Prototipos de funciones
@@ -63,7 +63,7 @@
 void configurarPWM(void);
 float obtenerTemp(void);
 void mostrarDig(int dig);
-void mostrarCompleto (int numero);
+void mostrarCompleto(int numero);
 //****************************************************************
 // Variables Globales
 //****************************************************************
@@ -73,13 +73,10 @@ int color = 0; // 0 para rojo 1 para verde y 2 para azul
 int dcR = 256;
 int dcG = 256;
 int dcB = 256;
-
-int caso = 0;
-
 Servo myservo;
-
-float temp = 0.0;
 int pos = 0;
+int caso = 0;
+float temp = 0.0;
 int tempDisplay = 0;
 int estadoSemaforo = 0;
 
@@ -96,7 +93,6 @@ int estadoSemaforo = 0;
 AdafruitIO_Feed *tempCanal = io.feed("Proyecto1Temperatura");
 AdafruitIO_Feed *estadoLed = io.feed("ValorLed");
 
-
 //****************************************************************
 // Configuración
 //****************************************************************
@@ -105,27 +101,31 @@ void setup()
   Serial.begin(115200);
   configurarPWM();
   pinMode(boton1, INPUT_PULLDOWN);
-  pinMode(PIN_LM35,INPUT);
-  pinMode(pinServo,OUTPUT);
+  pinMode(PIN_LM35, INPUT);
+  pinMode(pinServo, OUTPUT);
+  pinMode(A, OUTPUT);
+  pinMode(B, OUTPUT);
+  pinMode(C, OUTPUT);
+  pinMode(D, OUTPUT);
+  pinMode(E, OUTPUT);
+  pinMode(F, OUTPUT);
+  pinMode(G, OUTPUT);
   myservo.attach(pinServo);
   myservo.write(pos);
-  pinMode(A,OUTPUT);
-  pinMode(B,OUTPUT);
-  pinMode(C,OUTPUT);
-  pinMode(D,OUTPUT);
-  pinMode(E,OUTPUT);
-  pinMode(F,OUTPUT);
-  pinMode(G,OUTPUT);
-  pinMode(GND1,OUTPUT);
-  pinMode(GND2,OUTPUT);
-  pinMode(GND3,OUTPUT);
+  pinMode(GND1, OUTPUT);
+  pinMode(GND2, OUTPUT);
+  pinMode(GND3, OUTPUT);
 
-  //Adafruit
-  while(! Serial);
+  // ledcWrite(0, map(180,0,180,0,1023));
+
+  // Adafruit
+  while (!Serial)
+    ;
   Serial.print("Connecting to Adafruit IO");
   io.connect();
   // wait for a connection
-  while(io.status() < AIO_CONNECTED) {
+  while (io.status() < AIO_CONNECTED)
+  {
     Serial.print(".");
     delay(500);
   }
@@ -138,79 +138,70 @@ void setup()
 //****************************************************************
 void loop()
 {
-  io.run();
+
   int estadob1 = digitalRead(boton1); // lEER ESTADO DE LOS BOTONES
   if (estadob1 == 1)
   {
+    io.run();
     temp = obtenerTemp();
-    tempDisplay = temp*10;
-    Serial.println("Temperatura display");
-    Serial.println(tempDisplay);
-    //mostrarCompleto(tempDisplay);
-    //Serial.println("temp a displays");
-    //Serial.println(tempDisplay);
-    //digitalWrite(GND1,HIGH);
-    //digitalWrite(D,HIGH);
-    //mostrarDig(0);
-    Serial.println("Obteniendo temperatura: ");
+    tempDisplay = temp * 10;
+    Serial.println("**************\nObteniendo temperatura: ");
     Serial.println(temp);
-    if (temp <= 37.0)
+    if (temp <= 15.8)
     {
       caso = 0;
-      Serial.println("Temp menor a 37");
-      myservo.write(25);
-      delay(1000);
+      Serial.println("Temp menor a 15.8");
     }
-    else if (temp > 37.0 && temp <= 37.5)
+    else if (temp > 15.8 && temp <= 16.3)
     {
       caso = 1;
-      Serial.println("Temp entre 37 y 37.5");
+      Serial.println("Temp entre 15.8 y 16.3");
     }
-    else if (temp > 37)
+    else if (temp > 16.3)
     {
       caso = 2;
-      Serial.println("Temp mayor a 37");
+      Serial.println("Temp mayor a 16.3");
     }
 
     switch (caso)
     {
-    case 0:                       // Servo a 30° y modificar LED verde
+    case 0: // Servo a 30° y modificar LED verde
       estadoSemaforo = 0;
-      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledAChannel, 0);  // Apagar LED amarillo
       ledcWrite(pwmChannel, dcG); // Encender LED verde
       ledcWrite(ledGChannel, dcG);
-      myservo.write(30);
+      ledcWrite(pwmChannel, map(30, 0, 180, 30, 115));
+      ledcWrite(pwmChannelServo, map(30, 0, 180, 30, 115));
       delay(10);
       break;
-    case 1:                       // Servo a 90° y modificar LED amarillo
+    case 1: // Servo a 90° y modificar LED amarillo
       estadoSemaforo = 1;
-      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledRChannel, 0);  // Apagar LED rojo
       ledcWrite(ledGChannel, 0);  // Apagar LED verde
       ledcWrite(pwmChannel, dcB); // Encender LED amarillo
       ledcWrite(ledAChannel, dcB);
-      myservo.write(90);
+      ledcWrite(pwmChannel, map(90, 0, 180, 30, 115));
+      ledcWrite(pwmChannelServo, map(90, 0, 180, 30, 115));
       delay(10);
 
       break;
-    case 2:                       // Servo a 180° y modificar LED rojo
+    case 2: // Servo a 180° y modificar LED rojo
       estadoSemaforo = 2;
-      //estadoLed->save(estadoSemaforo);
       ledcWrite(ledGChannel, 0);  // Apagar led verde
       ledcWrite(ledAChannel, 0);  // Apagar led amarillo
       ledcWrite(pwmChannel, dcR); // Encender led rojo
       ledcWrite(ledRChannel, dcR);
-      myservo.write(150);
+      ledcWrite(pwmChannel, map(150, 0, 180, 30, 115));
+      ledcWrite(pwmChannelServo, map(150, 0, 180, 30, 115));
       delay(10);
       break;
     }
-    tempCanal->save(temp);
-    estadoLed->save(estadoSemaforo);
+    tempCanal->save(temp);           // Enviar temperatura a adafruit
+    estadoLed->save(estadoSemaforo); // enviar estado del semáforo
     delay(3000);
   }
-  
+
   mostrarCompleto(tempDisplay);
   delay(1);
 }
@@ -224,41 +215,36 @@ void configurarPWM(void)
   ledcSetup(ledRChannel, freqPWM1, resolution);
   ledcSetup(ledGChannel, freqPWM2, resolution);
   ledcSetup(ledAChannel, freqPWM, resolution);
-  // ledcSetup(pwmChannelServo, freqPWMServo, resolution);
+  ledcSetup(pwmChannelServo, freqPWMServo, reServo);
   //  Paso 2: seleccionar en que GPIO tendremos nuestra señal PWM
   ledcAttachPin(pinPWM, pwmChannel);
   ledcAttachPin(pinLedR, ledRChannel);
   ledcAttachPin(pinLedG, ledGChannel);
   ledcAttachPin(pinLedA, ledAChannel);
-  // ledcAttachPin(pinServo, pwmChannelServo);
+  ledcAttachPin(pinServo, pwmChannelServo);
+  ledcWrite(0, map(180, 0, 180, 0, 1023));
 }
 
 float obtenerTemp(void)
 {
   //******************************Descomentar al tener sensor******************
-  /*
+
   // read the ADC value from the temperature sensor
   int adcVal = analogRead(PIN_LM35);
   // convert the ADC value to voltage in millivolt
   float milliVolt = adcVal * (ADC_VREF_mV / ADC_RESOLUTION);
   // convert the voltage to the temperature in °C
   float tempC = milliVolt / 10;
-  // convert the °C to °F
-  float tempF = tempC * 9 / 5 + 32;
 
   // print the temperature in the Serial Monitor:
   Serial.print("Temperature: ");
-  Serial.print(tempC);   // print the temperature in °C
-  Serial.print("°C");
-  Serial.print("  ~  "); // separator between °C and °F
-  Serial.print(tempF);   // print the temperature in °F
-  Serial.println("°F");
-  
-  */
+  Serial.print(tempC); // print the temperature in °C
+  Serial.println("°C");
+
   //*****************************************************
 
   // Temporal en lo que no se tiene el sensor
-  float tempC = 38.3;
+  // float tempC = 38.3;
 
   delay(500);
   return tempC;
@@ -266,17 +252,13 @@ float obtenerTemp(void)
 
 // Funciones para digitos
 
-void mostrarDig(int dig)
+void mostrarDig(int dig) // Encender los pines correspondientes al dígito
 {
-  //Serial.println("Entra al mostrarDig");
   switch (dig)
   {
   case 0:
-    //Serial.println("El digito es 0");
     digitalWrite(A, HIGH);
-    //Serial.println("Enciende A");
     digitalWrite(B, HIGH);
-    //Serial.println("Enciende B");
     digitalWrite(C, HIGH);
     digitalWrite(D, HIGH);
     digitalWrite(E, HIGH);
@@ -367,22 +349,23 @@ void mostrarDig(int dig)
   }
 }
 
-void mostrarCompleto (int numero){
-  mostrarDig(numero/100);
-  digitalWrite(GND1, HIGH); // first digit on,
-  digitalWrite(GND2, LOW); // other off
-  digitalWrite(GND3, LOW);
-  delay (1);
+void mostrarCompleto(int numero)
+{
+  mostrarDig(numero / 100);
+  digitalWrite(GND1, HIGH); // encender el primer dígito
+  digitalWrite(GND2, LOW);  // apagar segundo dígito
+  digitalWrite(GND3, LOW);  // apagar tercer dígito
+  delay(1);
 
-  numero = numero%100;  // remainder of 1234/1000 is 234
-  digitalWrite(GND1, LOW); // first digit is off
-  mostrarDig(numero/10); //// segments are set to display "2"
-  digitalWrite(GND2, HIGH); // second digit is on
-  delay (1); // and so on....
+  numero = numero % 100;    // obtener el segundo dígito
+  digitalWrite(GND1, LOW);  // apagar el primer digito
+  mostrarDig(numero / 10);  // mostrar el segundo dígito
+  digitalWrite(GND2, HIGH); // encender el segundo dígito
+  delay(1);
 
-  numero =numero%10; 
-  digitalWrite(GND2, LOW);
-  mostrarDig(numero); 
-  digitalWrite(GND3, HIGH);
-  delay (1);
+  numero = numero % 10;     // Obtener el tercer dígito
+  digitalWrite(GND2, LOW);  // apagar el segundo dígito
+  mostrarDig(numero);       // mostrar el tercer dígito
+  digitalWrite(GND3, HIGH); // encender el tercer dígito
+  delay(1);
 }
